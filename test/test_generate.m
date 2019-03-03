@@ -1,10 +1,9 @@
 clear all
 
-scenario = simulator.scenario.load('scenario.json');
-ship = simulator.ship.load('ship_viknes830.json');
+problem = prob.load('ship_viknes830.json', 'scenario.json');
 
 %% Calculate
-result = cd.generate(ship, scenario);
+result = cd.generate(problem);
 
 %% Plot method results
 figure(3);
