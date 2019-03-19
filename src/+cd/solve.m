@@ -1,4 +1,6 @@
-function result = generate(ship, scenario)
+function result = generate(problem)
+
+    scenario = problem.scenario;
 
     % Generate grid
     grid = cd.initialize_grid(scenario);
