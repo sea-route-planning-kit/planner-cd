@@ -4,6 +4,7 @@ hold on
 problem = prob.load('ship_viknes830.json', 'sjernaroyane.scenario.json');
 gnc_settings = jsondecode(fileread('viknes830.gnc.json'));
 
+t0 = 10;
 xx0 = [505, 505, 0, 0,0,0]';
 aux0 = 0;
 c0 = 0;
@@ -15,7 +16,7 @@ trajectoryGenerator = hybrid_a_star.TrajectoryGenerator(problem.ship, gnc_settin
 
 
 tic
-[cells, all_cells] = hybrid_a_star.valid_cells(trajectoryGenerator, test_grid, xx0, aux0, c0);
+[cells, all_cells] = hybrid_a_star.valid_cells(trajectoryGenerator, test_grid, t0, xx0, aux0, c0);
 toc
 
 

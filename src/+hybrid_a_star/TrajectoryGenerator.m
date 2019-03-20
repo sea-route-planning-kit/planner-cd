@@ -14,7 +14,7 @@ classdef TrajectoryGenerator
             this.max_radius = sqrt(2)*cell_size*2;
         end
         
-        function trajectory = generate(this, xx0, aux0, c0, p_k1)
+        function trajectory = generate(this, t0, xx0, aux0, c0, p_k1)
             u_d = 5;
 
             [xx0_n, p_k1_n] = this.normalize(xx0, p_k1);
@@ -23,21 +23,21 @@ classdef TrajectoryGenerator
             if (this.buffer.isKey(bucket))
                 trajectory_n = this.buffer(bucket);
             else
-                trajectory_n = this.ship.simulate(xx0_n, aux0, c0, @(xx,aux) this.controller(xx, aux, xx0_n(1:2), p_k1_n, u_d, this.ship, this.settings), @(t,xx,uu) this.cost(t,xx,uu), 100, @(xx,aux) (xx(1)-xx0_n(1))^2 + (xx(2)-xx0_n(2))^2 - this.max_radius^2 > 0);
+                trajectory_n = this.ship.simulate(t0, xx0_n, aux0, c0, @(xx,aux) this.controller(xx, aux, xx0_n(1:2), p_k1_n, u_d, this.ship, this.settings), @(t,xx,uu) this.cost(t,xx,uu), 100, @(xx,aux) (xx(1)-xx0_n(1))^2 + (xx(2)-xx0_n(2))^2 - this.max_radius^2 > 0);
                 this.buffer(bucket) = trajectory_n;
             end
             trajectory = this.denormalize(trajectory_n, xx0);
         end
         
         function b = bucket(this, xx_n, p_k1_n)
-            du = 10;
-            dv = 10;
-            dr = pi/8;
-            dpx = 25;
-            dpy = 25;
-            b = [ 'u' int2str(floor(xx_n(1)/du)) ...
-                  'v' int2str(floor(xx_n(2)/dv)) ...
-                  'r' int2str(floor(xx_n(3)/dr)) ...
+            du = 1;
+            dv = 1;
+            dr = deg2rad(1);
+            dpx = 10;
+            dpy = 10;
+            b = [ 'u' int2str(floor(xx_n(4)/du)) ...
+                  'v' int2str(floor(xx_n(5)/dv)) ...
+                  'r' int2str(floor(xx_n(6)/dr)) ...
                   'px' int2str(floor(p_k1_n(1)/dpx)) ...
                   'py' int2str(floor(p_k1_n(2)/dpy)) ];
         end

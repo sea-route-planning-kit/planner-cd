@@ -1,4 +1,4 @@
-function [cells, all_cells] = valid_cells(trajectoryGenerator, grid, xx0, aux0, c0)
+function [cells, all_cells] = valid_cells(trajectoryGenerator, grid, t0, xx0, aux0, c0)
     
     [x,y] = grid.cellAtPosition(xx0(1), xx0(2));
     
@@ -28,8 +28,9 @@ function [cells, all_cells] = valid_cells(trajectoryGenerator, grid, xx0, aux0, 
             
             cell.x = x+x_d;
             cell.y = y+y_d;
-            cell.traj = trajectoryGenerator.generate(xx0, aux0, c0, p_k1);
+            cell.traj = trajectoryGenerator.generate(t0, xx0, aux0, c0, p_k1);
             %cell.traj = hybrid_a_star.generate_trajectory(xx0, aux0, c0, p_k1, max_radius, ship, settings);%ship.simulate(xx0, aux0, c0, @(xx,aux) controller(xx, aux, xx0(1:2), p_k1, u_d, ship, settings), @(t,xx,uu) cost(t,xx,uu), 100, @(xx,aux) (xx(1)-center(1))^2 + (xx(2)-center(2))^2 - r^2 > 0);
+            cell.t = cell.traj.t(end);
             cell.xx = cell.traj.xx(:,end);
             cell.aux = cell.traj.aux(:,end);
             cell.c = cell.traj.c(:,end);
@@ -48,6 +49,7 @@ function [cells, all_cells] = valid_cells(trajectoryGenerator, grid, xx0, aux0, 
                 cell.traj.xx = cell.traj.xx(:,1:t_closest);
                 cell.traj.aux = cell.traj.aux(:,1:t_closest);
                 cell.traj.c = cell.traj.c(1:t_closest);
+                cell.t = cell.traj.t(end);
                 cell.xx = cell.traj.xx(:,end);
                 cell.aux = cell.traj.aux(:,end);
                 cell.c = cell.traj.c(:,end);

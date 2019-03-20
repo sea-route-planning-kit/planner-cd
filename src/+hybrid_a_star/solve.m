@@ -1,6 +1,7 @@
 function result = solve(problem, settings)
 
     scenario = problem.scenario;
+    
 
     % Initialize
     grid = hybrid_a_star.initialize_grid(scenario, settings.cell_size);
@@ -18,6 +19,8 @@ function result = solve(problem, settings)
     D_f(grid.startCell.p(1),grid.startCell.p(2)) = sqrt((grid.endCell(1)-grid.startCell.p(1))^2 + (grid.endCell(2)-grid.startCell.p(2))^2);
     parents = zeros(size(grid.cells,1),size(grid.cells,2),2);
     %xx = empty(size(grid.cells));
+    t = cell(size(grid.cells));
+    t{grid.startCell.p(1),grid.startCell.p(2)} = 0;
     xx = cell(size(grid.cells));
     xx{grid.startCell.p(1),grid.startCell.p(2)} = grid.startCell.xx;
     aux = cell(size(grid.cells));
@@ -25,16 +28,18 @@ function result = solve(problem, settings)
     traj = cell(size(grid.cells));
     
     while(1)
-    %for i=1:60
+    %for i=1:5
         % Select the cell that is not yet visited and has lowest estimated
         % distance
         c = minimum(O,D_f);
+       
         
         if isempty(c)
             break;
         end
         x_c = c(1);
         y_c = c(2);
+        t_c = t{x_c,y_c};
         xx_c = xx{x_c,y_c};
         aux_c = aux{x_c,y_c};
         
@@ -55,18 +60,21 @@ function result = solve(problem, settings)
         O(x_c,y_c) = 0;
         C(x_c,y_c) = 1;
         
-
         
-        valid_cells = hybrid_a_star.valid_cells(trajectory_generator, grid, xx_c, aux_c, 0);
+        valid_cells = hybrid_a_star.valid_cells(trajectory_generator, grid, t_c, xx_c, aux_c, 0);
                    
         % Go through all valid cells
         for n=1:length(valid_cells)
             
+            
+            t_n = valid_cells(n).t;
             x_n = valid_cells(n).x;
             y_n = valid_cells(n).y;
             xx_n = valid_cells(n).xx;
             aux_n = valid_cells(n).aux;
             traj_n = valid_cells(n).traj;
+            
+            
             
             if C(x_n,y_n)
                 continue;
@@ -93,9 +101,11 @@ function result = solve(problem, settings)
             D_0(x_n,y_n) = d;
             D_f(x_n,y_n) = D_0(x_n,y_n) ...
                 + sqrt((grid.endCell(1)-x_n)^2 + (grid.endCell(2)-y_n)^2)*100;
+            t{x_n,y_n} = t_n;
             xx{x_n,y_n} = xx_n;
             aux{x_n,y_n} = aux_n;
             traj{x_n,y_n} = traj_n;
+           
             
         end
     end
