@@ -1,5 +1,6 @@
 classdef TrajectoryGenerator
     properties
+        buffer
         ship
         settings
         max_radius
@@ -7,6 +8,7 @@ classdef TrajectoryGenerator
     methods
         
         function this = TrajectoryGenerator(ship, settings, cell_size)
+            this.buffer = containers.Map;
             this.ship = ship;
             this.settings = settings;
             this.max_radius = sqrt(2)*cell_size*2;
@@ -15,15 +17,35 @@ classdef TrajectoryGenerator
         function trajectory = generate(this, xx0, aux0, c0, p_k1)
             u_d = 5;
 
-
             [xx0_n, p_k1_n] = this.normalize(xx0, p_k1);
-            trajectory_n = this.ship.simulate(xx0_n, aux0, c0, @(xx,aux) this.controller(xx, aux, xx0_n(1:2), p_k1_n, u_d, this.ship, this.settings), @(t,xx,uu) this.cost(t,xx,uu), 100, @(xx,aux) (xx(1)-xx0_n(1))^2 + (xx(2)-xx0_n(2))^2 - this.max_radius^2 > 0);
+            
+            bucket = this.bucket(xx0_n, p_k1_n);
+            if (this.buffer.isKey(bucket))
+                trajectory_n = this.buffer(bucket);
+            else
+                trajectory_n = this.ship.simulate(xx0_n, aux0, c0, @(xx,aux) this.controller(xx, aux, xx0_n(1:2), p_k1_n, u_d, this.ship, this.settings), @(t,xx,uu) this.cost(t,xx,uu), 100, @(xx,aux) (xx(1)-xx0_n(1))^2 + (xx(2)-xx0_n(2))^2 - this.max_radius^2 > 0);
+                this.buffer(bucket) = trajectory_n;
+            end
             trajectory = this.denormalize(trajectory_n, xx0);
+        end
+        
+        function b = bucket(this, xx_n, p_k1_n)
+            du = 10;
+            dv = 10;
+            dr = pi/8;
+            dpx = 25;
+            dpy = 25;
+            b = [ 'u' int2str(floor(xx_n(1)/du)) ...
+                  'v' int2str(floor(xx_n(2)/dv)) ...
+                  'r' int2str(floor(xx_n(3)/dr)) ...
+                  'px' int2str(floor(p_k1_n(1)/dpx)) ...
+                  'py' int2str(floor(p_k1_n(2)/dpy)) ];
         end
     end
 
         
     methods(Static)
+       
         function [xx_n, p_k1_n] = normalize(xx, p_k1)
             p = xx(1:2);
             psi = xx(3);

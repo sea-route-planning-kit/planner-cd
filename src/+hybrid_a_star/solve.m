@@ -92,7 +92,7 @@ function result = solve(problem, settings)
             parents(x_n,y_n,:) = c;
             D_0(x_n,y_n) = d;
             D_f(x_n,y_n) = D_0(x_n,y_n) ...
-                + sqrt((grid.endCell(1)-x_n)^2 + (grid.endCell(2)-y_n)^2) * 100;
+                + sqrt((grid.endCell(1)-x_n)^2 + (grid.endCell(2)-y_n)^2)*100;
             xx{x_n,y_n} = xx_n;
             aux{x_n,y_n} = aux_n;
             traj{x_n,y_n} = traj_n;

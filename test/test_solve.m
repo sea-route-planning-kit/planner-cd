@@ -5,7 +5,7 @@ gnc_settings = jsondecode(fileread('viknes830.gnc.json'));
 %problem.scenario.start_position = [8500; 7600];
 
 %% Calculate
-settings.cell_size = 150;
+settings.cell_size = 50;
 settings.gnc = gnc_settings;
 
 tic

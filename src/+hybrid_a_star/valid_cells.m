@@ -54,7 +54,6 @@ function [cells, all_cells] = valid_cells(trajectoryGenerator, grid, xx0, aux0, 
                 
                 cells = [cells cell];
             end
-
         end
     end
 end
