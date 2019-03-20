@@ -7,34 +7,34 @@ classdef TrajectoryGenerator
     end
     methods
         
-        function this = TrajectoryGenerator(ship, settings, cell_size)
+        function this = TrajectoryGenerator(ship, settings)
             this.buffer = containers.Map;
             this.ship = ship;
             this.settings = settings;
-            this.max_radius = sqrt(2)*cell_size*2;
+            this.max_radius = sqrt(2)*settings.cell_size*2;
         end
         
         function trajectory = generate(this, t0, xx0, aux0, c0, p_k1)
             u_d = 5;
 
-            [xx0_n, p_k1_n] = this.normalize(xx0, p_k1);
+            [t0_n, xx0_n, c0_n, p_k1_n] = this.normalize(t0, xx0, c0, p_k1);
             
             bucket = this.bucket(xx0_n, p_k1_n);
             if (this.buffer.isKey(bucket))
                 trajectory_n = this.buffer(bucket);
             else
-                trajectory_n = this.ship.simulate(t0, xx0_n, aux0, c0, @(xx,aux) this.controller(xx, aux, xx0_n(1:2), p_k1_n, u_d, this.ship, this.settings), @(t,xx,uu) this.cost(t,xx,uu), 100, @(xx,aux) (xx(1)-xx0_n(1))^2 + (xx(2)-xx0_n(2))^2 - this.max_radius^2 > 0);
+                trajectory_n = this.ship.simulate(t0_n, xx0_n, aux0, c0_n, @(xx,aux) this.controller(xx, aux, xx0_n(1:2), p_k1_n, u_d, this.ship, this.settings.gnc), @(t,xx,uu) this.cost(t,xx,uu), 100, @(xx,aux) (xx(1)-xx0_n(1))^2 + (xx(2)-xx0_n(2))^2 - this.max_radius^2 > 0);
                 this.buffer(bucket) = trajectory_n;
             end
-            trajectory = this.denormalize(trajectory_n, xx0);
+            trajectory = this.denormalize(trajectory_n, t0, xx0, c0);
         end
         
         function b = bucket(this, xx_n, p_k1_n)
             du = 1;
             dv = 1;
-            dr = deg2rad(1);
-            dpx = 10;
-            dpy = 10;
+            dr = deg2rad(5);
+            dpx = 25;
+            dpy = 25;
             b = [ 'u' int2str(floor(xx_n(4)/du)) ...
                   'v' int2str(floor(xx_n(5)/dv)) ...
                   'r' int2str(floor(xx_n(6)/dr)) ...
@@ -46,30 +46,34 @@ classdef TrajectoryGenerator
         
     methods(Static)
        
-        function [xx_n, p_k1_n] = normalize(xx, p_k1)
+        function [t_n, xx_n, c_n, p_k1_n] = normalize(t, xx, c, p_k1)
             p = xx(1:2);
             psi = xx(3);
             R = [cos(psi) -sin(psi); sin(psi) cos(psi)];  
 
+            t_n = 0;
             xx_n = zeros(6,1);
             xx_n(4:end) = xx(4:end);
+            c_n = 0;
 
             p_k1_n = p_k1 - p;
             p_k1_n = R'*p_k1_n;
         end
 
-        function trajectory = denormalize(trajectory_n, xx)
+        function trajectory = denormalize(trajectory_n, t, xx, c)
             p = xx(1:2);
             psi = xx(3);
             R = [cos(psi) -sin(psi); sin(psi) cos(psi)];  
 
 
             trajectory = trajectory_n;
+            trajectory.t = trajectory.t + t;
             for t=1:length(trajectory.t)
                 trajectory.xx(1:2,t) = R * trajectory.xx(1:2,t);
                 trajectory.xx(1:2,t) = trajectory.xx(1:2,t) + p;
             end
             trajectory.xx(3,:) = trajectory.xx(3,:) + psi;
+            trajectory.c = trajectory.c + c;
             %trajectory_n.xx = trajectory.xx - 
             %xx_n = [0;0;];
             %R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
@@ -82,8 +86,7 @@ classdef TrajectoryGenerator
         end
 
         function [c_dot] = cost(t,xx,uu)
-            %K_u = 999;
-            c_dot = norm(xx(4:6));%1 + norm(uu)*K_u; %;
+            c_dot = norm(xx(4:6));
         end
     end
 end

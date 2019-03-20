@@ -47,6 +47,7 @@ function [cells, all_cells] = valid_cells(trajectoryGenerator, grid, t0, xx0, au
                 % Cut down
                 cell.traj.t = cell.traj.t(1:t_closest);
                 cell.traj.xx = cell.traj.xx(:,1:t_closest);
+                cell.traj.uu = cell.traj.uu(:,1:t_closest);
                 cell.traj.aux = cell.traj.aux(:,1:t_closest);
                 cell.traj.c = cell.traj.c(1:t_closest);
                 cell.t = cell.traj.t(end);

@@ -1,10 +1,13 @@
 clear all
-hold on
 
 problem = prob.load('ship_viknes830.json', 'sjernaroyane.scenario.json');
 gnc_settings = jsondecode(fileread('viknes830.gnc.json'));
+settings = jsondecode(fileread('viknes830.settings.json'));
+settings.gnc = gnc_settings;
+settings.cell_size = 50;
 
-t0 = 10;
+
+t0 = 100;
 xx0 = [505, 505, 0, 0,0,0]';
 aux0 = 0;
 c0 = 0;
@@ -12,7 +15,7 @@ cell_size = 50;
 r = sqrt(2)*cell_size*2;
 
 test_grid = hybrid_a_star.initialize_grid(problem.scenario, cell_size);
-trajectoryGenerator = hybrid_a_star.TrajectoryGenerator(problem.ship, gnc_settings, cell_size);
+trajectoryGenerator = hybrid_a_star.TrajectoryGenerator(problem.ship, settings);
 
 
 tic
@@ -22,8 +25,9 @@ toc
 
 
 %% Plot
-%figure(1);
-%clf
+figure(1);
+clf
+hold on
 for i=1:length(all_cells)
     test_grid.plot_cell(all_cells(i).y, all_cells(i).x, 'r');
 end

@@ -5,7 +5,7 @@ function result = solve(problem, settings)
 
     % Initialize
     grid = hybrid_a_star.initialize_grid(scenario, settings.cell_size);
-    trajectory_generator = hybrid_a_star.TrajectoryGenerator(problem.ship, settings.gnc, settings.cell_size);
+    trajectory_generator = hybrid_a_star.TrajectoryGenerator(problem.ship, settings);
 
 
     % Initialize search variables for Dijkstra (visited cells, estimated
@@ -28,7 +28,7 @@ function result = solve(problem, settings)
     traj = cell(size(grid.cells));
     
     while(1)
-    %for i=1:5
+    %for i=1:20
         % Select the cell that is not yet visited and has lowest estimated
         % distance
         c = minimum(O,D_f);
@@ -42,6 +42,7 @@ function result = solve(problem, settings)
         t_c = t{x_c,y_c};
         xx_c = xx{x_c,y_c};
         aux_c = aux{x_c,y_c};
+        c_c = D_0(x_c,y_c);
         
         if reached_goal_cell(grid.endCell, c)
             grid.C = C;
@@ -61,7 +62,7 @@ function result = solve(problem, settings)
         C(x_c,y_c) = 1;
         
         
-        valid_cells = hybrid_a_star.valid_cells(trajectory_generator, grid, t_c, xx_c, aux_c, 0);
+        valid_cells = hybrid_a_star.valid_cells(trajectory_generator, grid, t_c, xx_c, aux_c, c_c);
                    
         % Go through all valid cells
         for n=1:length(valid_cells)
@@ -88,7 +89,7 @@ function result = solve(problem, settings)
                 end
             end
             
-            d = D_0(x_c,y_c) + valid_cells(n).c; %sqrt((x_n-x_c)^2+(y_n-y_c)^2);
+            d = valid_cells(n).c; %D_0(x_c,y_c) +  %sqrt((x_n-x_c)^2+(y_n-y_c)^2);
             
             
             
@@ -136,14 +137,24 @@ end
 % Helper function to translate a grid path for a given grid into a real
 % path in the environment
 function traj = trajectory(grid, grid_path)
-    traj = [];
+    traj.t = [];
+    traj.xx = [];
+    traj.aux = [];
+    traj.uu = [];
+    traj.c = [];
     for i=1:size(grid_path,1)
         x = grid_path(i,1);
         y = grid_path(i,2);
         %x = (grid.X() + grid.X(grid_path(i,1)+1))/2;
         %y = (grid.Y(grid_path(i,2)) + grid.Y(grid_path(i,2)+1))/2;
-        traj = [traj grid.traj{x,y}];
-        
+        %traj = [traj grid.traj{x,y}];
+        if (~isempty(grid.traj{x,y}))
+            traj.t = [traj.t grid.traj{x,y}.t];
+            traj.xx = [traj.xx grid.traj{x,y}.xx];
+            traj.aux = [traj.aux grid.traj{x,y}.aux];
+            traj.uu = [traj.uu grid.traj{x,y}.uu];
+            traj.c = [traj.c grid.traj{x,y}.c];
+        end
     end
 end
 

@@ -22,3 +22,4 @@ end
 
 figure(1)
 plot(traj.xx(2,:), traj.xx(1,:), 'g', 'linewidth', 2.0)
+
