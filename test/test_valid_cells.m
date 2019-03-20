@@ -4,13 +4,14 @@ hold on
 problem = prob.load('ship_viknes830.json', 'sjernaroyane.scenario.json');
 gnc_settings = jsondecode(fileread('viknes830.gnc.json'));
 
-xx0 = [525, 525, pi/2, 0,0,0]';
+xx0 = [525, 525, 0, 0,0,0]';
 aux0 = 0;
 c0 = 0;
 cell_size = 50;
 r = sqrt(2)*cell_size*2;
 
 test_grid = hybrid_a_star.initialize_grid(problem.scenario, cell_size);
+trajectoryGenerator = hybrid_a_star.TrajectoryGenerator(problem.ship, gnc_settings, cell_size);
 
 
 %%
@@ -21,7 +22,7 @@ test_grid = hybrid_a_star.initialize_grid(problem.scenario, cell_size);
 %settings.r_max = 0.35;
 
 tic
-[cells, all_cells] = hybrid_a_star.valid_cells(problem.ship, test_grid, xx0, aux0, c0, gnc_settings);
+[cells, all_cells] = hybrid_a_star.valid_cells(trajectoryGenerator, test_grid, xx0, aux0, c0);
 toc
 
 

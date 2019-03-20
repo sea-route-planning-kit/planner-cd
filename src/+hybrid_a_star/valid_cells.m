@@ -1,9 +1,7 @@
-function [cells, all_cells] = valid_cells(ship, grid, xx0, aux0, c0, settings)
+function [cells, all_cells] = valid_cells(trajectoryGenerator, grid, xx0, aux0, c0)
     
     [x,y] = grid.cellAtPosition(xx0(1), xx0(2));
     
-    
-
     %X_density = settings.X_density;
     %X_limit = settings.X_limit;
     %N_density = settings.N_density;
@@ -26,11 +24,12 @@ function [cells, all_cells] = valid_cells(ship, grid, xx0, aux0, c0, settings)
             %X = X_limit(1) + (x-1)/(X_density-1) * (X_limit(2)-X_limit(1));
             %N = N_limit(1) + (n-1)/(N_density-1) * (N_limit(2)-N_limit(1));
             p_k1 = grid.cellCenter(x+x_d, y+y_d); %p_k + [x_d;y_d]*grid.cell_size;
-            max_radius = sqrt(2)*grid.cell_size*2;
+            
             
             cell.x = x+x_d;
             cell.y = y+y_d;
-            cell.traj = hybrid_a_star.generate_trajectory(xx0, aux0, c0, p_k1, max_radius, ship, settings);%ship.simulate(xx0, aux0, c0, @(xx,aux) controller(xx, aux, xx0(1:2), p_k1, u_d, ship, settings), @(t,xx,uu) cost(t,xx,uu), 100, @(xx,aux) (xx(1)-center(1))^2 + (xx(2)-center(2))^2 - r^2 > 0);
+            cell.traj = trajectoryGenerator.generate(xx0, aux0, c0, p_k1);
+            %cell.traj = hybrid_a_star.generate_trajectory(xx0, aux0, c0, p_k1, max_radius, ship, settings);%ship.simulate(xx0, aux0, c0, @(xx,aux) controller(xx, aux, xx0(1:2), p_k1, u_d, ship, settings), @(t,xx,uu) cost(t,xx,uu), 100, @(xx,aux) (xx(1)-center(1))^2 + (xx(2)-center(2))^2 - r^2 > 0);
             cell.xx = cell.traj.xx(:,end);
             cell.aux = cell.traj.aux(:,end);
             cell.c = cell.traj.c(:,end);

@@ -2,8 +2,10 @@ function result = solve(problem, settings)
 
     scenario = problem.scenario;
 
-    % Generate grid
+    % Initialize
     grid = hybrid_a_star.initialize_grid(scenario, settings.cell_size);
+    trajectory_generator = hybrid_a_star.TrajectoryGenerator(problem.ship, settings.gnc, settings.cell_size);
+
 
     % Initialize search variables for Dijkstra (visited cells, estimated
     % distance and parents)
@@ -55,7 +57,7 @@ function result = solve(problem, settings)
         
 
         
-        valid_cells = hybrid_a_star.valid_cells(problem.ship, grid, xx_c, aux_c, 0, settings.gnc);
+        valid_cells = hybrid_a_star.valid_cells(trajectory_generator, grid, xx_c, aux_c, 0);
                    
         % Go through all valid cells
         for n=1:length(valid_cells)
