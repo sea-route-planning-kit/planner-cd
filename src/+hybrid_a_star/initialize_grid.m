@@ -4,9 +4,9 @@ function grid = initialize_grid(scenario, cell_size)
     dY = cell_size;
     
     % Split up environment into cells according to cell size
-    X = scenario.x_limit(1):dX:scenario.x_limit(2);
-    Y = scenario.y_limit(1):dY:scenario.y_limit(2);
-    cells = zeros(length(X)-1, length(Y)-1);
+    X = scenario.x_limit(1):dX:(scenario.x_limit(2)-dX);
+    Y = scenario.y_limit(1):dY:(scenario.y_limit(2)-dY);
+    cells = zeros(length(X), length(Y));
     
     % Define start cell from mission
     start_cell = [];

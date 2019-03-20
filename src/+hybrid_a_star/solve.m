@@ -18,10 +18,12 @@ function result = solve(problem, settings)
     %xx = empty(size(grid.cells));
     xx = cell(size(grid.cells));
     xx{grid.startCell.p(1),grid.startCell.p(2)} = grid.startCell.xx;
+    aux = cell(size(grid.cells));
+    aux{grid.startCell.p(1),grid.startCell.p(2)} = 0;
     traj = cell(size(grid.cells));
     
-    %while(1)
-    for i=1:50
+    while(1)
+    %for i=1:60
         % Select the cell that is not yet visited and has lowest estimated
         % distance
         c = minimum(O,D_f);
@@ -32,6 +34,7 @@ function result = solve(problem, settings)
         x_c = c(1);
         y_c = c(2);
         xx_c = xx{x_c,y_c};
+        aux_c = aux{x_c,y_c};
         
         if reached_goal_cell(grid.endCell, c)
             grid.C = C;
@@ -40,8 +43,8 @@ function result = solve(problem, settings)
             grid.xx = xx;
             grid.traj = traj;
             grid_p = grid_path(c, parents);
-            p = path(grid, grid_p);
-            result = hybrid_a_star.Result(scenario, grid, grid_p, p);  
+            traj = trajectory(grid, grid_p);
+            result = hybrid_a_star.Result(scenario, grid, grid_p, traj);  
             return
         end
         
@@ -52,7 +55,7 @@ function result = solve(problem, settings)
         
 
         
-        valid_cells = hybrid_a_star.valid_cells(problem.ship, grid, xx_c, 0, settings);
+        valid_cells = hybrid_a_star.valid_cells(problem.ship, grid, xx_c, aux_c, 0, settings.gnc);
                    
         % Go through all valid cells
         for n=1:length(valid_cells)
@@ -60,6 +63,7 @@ function result = solve(problem, settings)
             x_n = valid_cells(n).x;
             y_n = valid_cells(n).y;
             xx_n = valid_cells(n).xx;
+            aux_n = valid_cells(n).aux;
             traj_n = valid_cells(n).traj;
             
             if C(x_n,y_n)
@@ -67,7 +71,7 @@ function result = solve(problem, settings)
             end
             
             if ~O(x_n,y_n)
-                if ~scenario.is_area_free([grid.X(x_n) grid.X(x_n+1)], [grid.Y(y_n) grid.Y(y_n+1)])
+                if ~scenario.is_area_free([grid.X(x_n) grid.X(x_n)+grid.cell_size], [grid.Y(y_n) grid.Y(y_n)+grid.cell_size])
                     grid.cells(x_n,y_n) = 1;
                     C(x_n,y_n) = 1;
                     continue
@@ -86,8 +90,9 @@ function result = solve(problem, settings)
             parents(x_n,y_n,:) = c;
             D_0(x_n,y_n) = d;
             D_f(x_n,y_n) = D_0(x_n,y_n) ...
-                + sqrt((grid.endCell(1)-x_n)^2 + (grid.endCell(2)-y_n)^2);
+                + sqrt((grid.endCell(1)-x_n)^2 + (grid.endCell(2)-y_n)^2) * 100;
             xx{x_n,y_n} = xx_n;
+            aux{x_n,y_n} = aux_n;
             traj{x_n,y_n} = traj_n;
             
         end
@@ -102,8 +107,8 @@ end
 
 % Helper function to determine if the goal has been reached, and if so,
 % what cell was reached
-function c = reached_goal_cell(end_cell, c)
-    c = end_cell(1) == c(1) && end_cell(2) == c(2);
+function reached = reached_goal_cell(end_cell, c)
+    reached = end_cell(1) == c(1) && end_cell(2) == c(2);
 end
 
 % Helper function to generate grid path by traversing from a given cell
@@ -118,12 +123,15 @@ end
 
 % Helper function to translate a grid path for a given grid into a real
 % path in the environment
-function p = path(grid, grid_path)
-    p = zeros(size(grid_path,1),2);
-    for t=1:size(grid_path,1)
-        x = (grid.X(grid_path(t,1)) + grid.X(grid_path(t,1)+1))/2;
-        y = (grid.Y(grid_path(t,2)) + grid.Y(grid_path(t,2)+1))/2;
-        p(t,:) = [x, y];
+function traj = trajectory(grid, grid_path)
+    traj = [];
+    for i=1:size(grid_path,1)
+        x = grid_path(i,1);
+        y = grid_path(i,2);
+        %x = (grid.X() + grid.X(grid_path(i,1)+1))/2;
+        %y = (grid.Y(grid_path(i,2)) + grid.Y(grid_path(i,2)+1))/2;
+        traj = [traj grid.traj{x,y}];
+        
     end
 end
 

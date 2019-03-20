@@ -3,14 +3,14 @@ classdef Result
         scenario
         grid
         grid_path
-        path
+        trajectory
     end
     methods
-        function this = Result(scenario, grid, grid_path, path)
+        function this = Result(scenario, grid, grid_path, trajectory)
             this.scenario = scenario;
             this.grid = grid;
             this.grid_path = grid_path;
-            this.path = path;
+            this.trajectory = trajectory;
         end
         
         function plot(this)
@@ -24,13 +24,17 @@ classdef Result
             for i=1:size(this.grid_path,1)
                 x = this.grid_path(i,1);
                 y = this.grid_path(i,2);
-                h = plot_cell(this.grid, y, x, 'g', 'EdgeColor','k', 'LineWidth',0.5, 'DisplayName','Grid path');
+                h = plot_cell(this.grid, y, x, 'b', 'EdgeColor','k', 'LineWidth',0.5, 'DisplayName','Grid path');
                 if firstCellPath
                     h.Annotation.LegendInformation.IconDisplayStyle = 'off';
                 end
                 firstCellPath = true;
             end
             
+            % Trajectory
+            for i=1:length(this.trajectory)
+                plot(this.trajectory(i).xx(2,:), this.trajectory(i).xx(1,:), 'k', 'LineWidth',2);
+            end
             % Path
 %             legend(); %h_tot
             %legend([h_obstacles(1); h_grids(1); h_startCell; h_endCells(1); h_tot(1)]);

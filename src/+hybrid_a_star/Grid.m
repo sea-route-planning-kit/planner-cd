@@ -23,8 +23,8 @@ classdef Grid
         end
         
         function h = plot_cell(this, x,y, varargin)
-            cell_shape = [this.X(x), this.X(x),   this.X(x+1), this.X(x+1), this.X(x);
-                          this.Y(y), this.Y(y+1), this.Y(y+1), this.Y(y),   this.Y(y)];
+            cell_shape = [this.X(x), this.X(x),   this.X(x)+this.cell_size, this.X(x)+this.cell_size, this.X(x);
+                          this.Y(y), this.Y(y)+this.cell_size, this.Y(y)+this.cell_size, this.Y(y),   this.Y(y)];
             h = fill(cell_shape(1,:), cell_shape(2,:), varargin{:});
                             
         end
@@ -32,11 +32,11 @@ classdef Grid
         function [gridX,gridY,distanceToCenter] = cellAtPosition(this, posX, posY)
             for x=1:size(this.cells,1)
                 for y=1:size(this.cells,2)
-                    if (posX >= this.X(x) && posX < this.X(x+1) && ...
-                        posY >= this.Y(y) && posY < this.Y(y+1))
+                    if (posX >= this.X(x) && posX < this.X(x)+this.cell_size && ...
+                        posY >= this.Y(y) && posY < this.Y(y)+this.cell_size)
                         gridX = x;
                         gridY = y;
-                        center = [(this.X(x)+this.X(x+1))/2; (this.Y(y)+this.Y(y+1))/2];
+                        center = this.cellCenter(x,y);
                         distanceToCenter = norm([posX;posY] - center);
                         return;
                     end
@@ -46,6 +46,11 @@ classdef Grid
             gridY = -1;
             distanceToCenter = -1;
         end
+        
+        function p = cellCenter(this, x, y)
+            p = [this.X(x)+this.cell_size/2; this.Y(y)+this.cell_size/2];
+        end
+        
         
         function plot(this)
             % Plot grid obstacles and grid lines
